@@ -1,27 +1,14 @@
-// const options = {
-//     rootMargin: '0px',
-//     threshold: 0.1
-//   };
+const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target.querySelector('img');
+            img.src = img.dataset.src;
+            observer.unobserve(entry.target);
+        }
+    });
+}, {rootMargin: '0px 0px 200px 0px'});
 
-// const observer = new IntersectionObserver(callback, options);
 
-// function callback(entries, observer) {
-//   entries.forEach(entry => {
-//     if (entry.isIntersecting) {
-//       const movie = entry.target;
-//       const img = movie.querySelector('img');
-//       const src = img.getAttribute('data-src');
-
-//       img.setAttribute('src', src);
-//       observer.unobserve(movie);
-//     }
-//   });
-// }
-
-// const movies = document.querySelectorAll('.movie');
-// movies.forEach(movie => {
-//   observer.observe(movie);
-// });
 
 const API_KEY = 'api_key=891d017220cf5c6013ec435bd972de40';
 const BASE_URL = 'https://api.themoviedb.org/3'
@@ -43,26 +30,30 @@ function getMovies(url) {
 }
 
 function showMovies(data) {
-    main.innerHTML = ''
+    main.innerHTML = '';
 
     data.forEach(movie => {
         const {title, poster_path, vote_average, overview} = movie;
         const movieEl = document.createElement('div');
         movieEl.classList.add('movie');
         movieEl.innerHTML = `
-        <img src="${IMG_URL+poster_path}" alt="${title}" loading="lazy"/>
+        <img data-src="${IMG_URL+poster_path}" alt="${title}"/>
 
 		<div class="movie-info">
-			<h3>"${title}"</h3>
-				<span class="${getColor(vote_average)}">"${vote_average}"</span>
+			<h3>${title}</h3>
+			<span class="${getColor(vote_average)}">${vote_average}</span>
 		</div>
 
 		<div class="overview">
-        ${overview}	
-        </div>
-        `
+			${overview}
+		</div>
+        `;
+
         main.appendChild(movieEl);
-    })
+
+        // observe the img tag for lazy loading
+        observer.observe(movieEl);
+    });
 }
 
 function getColor(vote) {
